@@ -1,6 +1,5 @@
-import path = require('path')
 import * as fs from "fs";
-
+const reader = require('xlsx')
 const FileController = {
 
 
@@ -15,7 +14,7 @@ const FileController = {
 
         myFile.name = myFile.name.replace(myFile.name, `${filename}`)
 
-        fs.stat(`${process.env.FILES}/${myFile.name}`, function(err, stat) {
+        fs.stat(`${process.env.FILES}/${myFile.name}`, function(err) {
 
             if(err == null) {
                 console.log('File exists, Replacing...');
@@ -54,16 +53,64 @@ const FileController = {
         })
     },
 
-    destroy: async (req: any, res: any) => {
+    download: async (req: any, res: any) => {
+        const filename = req.params.filename;
 
-        return res.status(200).send({data: true})
+
+        fs.stat(`${process.env.COSTSHEET}/${filename}.xlsx`, function(err) {
+
+            if(err == null) {
+
+                return res.download(`${process.env.COSTSHEET}/${filename}.xlsx`);
+
+            } else if(err.code === 'ENOENT') {
+                res.send({message:"no file"})
+
+            } else {
+                console.log('Some other error: ', err.code);
+                res.send({message:"error"})
+            }
+        });
+
+
 
     },
 
     fetchFile: async (req: any, res: any) => {
 
-        return null;
-        // return res.download(`${process.env.FILES}/${filedetails[0].filename}`, filedetails[0].filename.split("-uuid-")[0]);
+
+        const filename = req.params.filename;
+        console.log(filename)
+
+        let data = <any>[]
+
+        fs.stat(`${process.env.COSTSHEET}/${filename}.xlsx`, function(err) {
+
+            if(err == null) {
+
+                const file = reader.readFile(`${process.env.COSTSHEET}/${filename}.xlsx`)
+
+
+                const sheets = file.SheetNames
+                for(let i = 0; i < sheets.length; i++)
+                {
+                    const temp = reader.utils.sheet_to_json(
+                        file.Sheets[file.SheetNames[i]],{defval:""})
+                    temp.forEach((resp:any) => {
+                        data.push(resp)
+                    })
+                }
+
+                // console.log(data)
+                return res.send({
+                    data: data,
+                })
+            } else if(err.code === 'ENOENT') {
+                console.log("no file")
+            } else {
+                console.log('Some other error: ', err.code);
+            }
+        });
     },
 
 }

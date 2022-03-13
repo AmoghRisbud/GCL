@@ -7,15 +7,12 @@ require('dotenv').config({path: path.join(__dirname, '../.env')})
 const port = process.env.API_PORT
 const fileUpload = require('express-fileupload')
 
-import {createConnection, getConnection} from 'typeorm'
+import {createConnection} from 'typeorm'
 import cors = require('cors')
 import bodyParser = require('body-parser')
 
 const router = express.Router()
 import User from "./entities/User";
-import UserController from "./controllers/UserController";
-import SessionController from "./controllers/SessionController";
-import isAuthenticated from "./middleware/isAuthenticated";
 import FileController from "./controllers/FileController";
 
 const main = async () => {
@@ -36,18 +33,14 @@ const main = async () => {
         logging: true,
     })
 
-    //
-    // router.put('/user', UserController.create)
-    //
-    // router.put('/session', SessionController.create)
-    // router.get('/session', isAuthenticated, SessionController.show)
-    // router.delete('/session', isAuthenticated, SessionController.destroy)
 
 
-
+    router.get('/fetchdata/:filename', FileController.fetchFile)
+    router.get('/download/:filename', FileController.download)
     router.post('/file',fileUpload(),FileController.create)
-    router.delete('/file/:uuid',  FileController.destroy)
-    router.get('/files/:uuid', FileController.fetchFile)
+
+    router.delete('/file/:uuid',  FileController.download)
+
 
     app.use('/api', router)
     app.listen(port, () => {
