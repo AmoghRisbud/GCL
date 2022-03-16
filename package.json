@@ -8,7 +8,7 @@
     "dev": "nodemon src/app.ts"
   },
   "keywords": [],
-  "author": "",
+  "author": "Amogh Risbud",
   "license": "ISC",
   "dependencies": {
     "argon2": "^0.28.3",
